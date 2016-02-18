@@ -12,9 +12,8 @@ RUN cd /app && curl https://download.owncloud.org/community/owncloud-{$OWNCLOUD_
     && rm -f tmp-cron \
     && echo "apc.enable_cli=1" >> /etc/php/7.0/cli/php.ini
 
-COPY docker-entrypoint.sh default.config.php default.conf /app/
-RUN chmod +x /app/docker-entrypoint.sh
-
-ENTRYPOINT /app/docker-entrypoint.sh
+COPY default.config.php default.conf /app/
+COPY 10-owncloud.sh /app/firstrun
+RUN chmod +x /app/firstrun/10-owncloud.sh
 
 VOLUME ['/data', '/app/owncloud/config']

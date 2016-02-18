@@ -1,22 +1,21 @@
 #!/bin/bash
-set -e
-
-trap 'echo oh, I am slain; exit' INT
+set -eo pipefail
 
 if [ ! -e '/app/owncloud/config/config.php' ]; then
-    echo "*** FIRST TIME RUN"
-    echo "*** Copying default config file"
+    echo "  ** Copying default config file"
     cp /app/default.config.php /app/owncloud/config/config.php
     chown www-data:www-data /app/owncloud/config/config.php
-
-    echo "*** Changing owner on data volume to www-data"
-    chown -R www-data:www-data /data
 fi
 
+echo "  ** Changing owner on data volume to www-data"
+chown -R www-data:www-data /data
+
 if [ -z "$VIRTUAL_LOCATION" ]; then
+    echo "  ** No VIRTUAL_LOCATION set defaulting to /"
     VIRTUAL_LOCATION="/"
 fi
 
+echo "  ** Setting up OwnCloud in Subdirectory: $VIRTUAL_LOCATION"
 if [ "$VIRTUAL_LOCATION" == "/" ]; then
     DOC_ROOT="/app/owncloud/"
     LOCATION="/"
@@ -32,12 +31,3 @@ if [ -e '/etc/nginx/conf.d/default.conf' ]; then
 fi
 
 sed -e "s,ROOT,${DOC_ROOT},g" -e "s,VIRTUAL_LOCATION,${LOCATION},g" /app/default.conf >> /etc/nginx/conf.d/default.conf
-
-echo "$@"
-echo "$1"
-
-if [ -z "$@" ]; then
-    /usr/local/bin/forego start -r
-else
-    exec "$@"
-fi
